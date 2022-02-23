@@ -8,9 +8,9 @@ The purpose of this GitHub Action is to check code in more complex ways than is 
 
 | NAME      | DESCRIPTION                                                            | TYPE    | REQUIRED | DEFAULT |
 | --------- | ---------------------------------------------------------------------- | ------- | -------- | ------- |
-| token     | GitHub access token with repo permissions                              | string  | yes      |         |
 | changelog | Whether to check the changelog for missing entries                     | boolean | no       | true    |
 | todos     | Whether to check for TODOs in code that are resolved by the current PR | boolean | no       | true    |
+| token     | GitHub access token with repo permissions                              | string  | yes      |         |
 
 ## Example
 
