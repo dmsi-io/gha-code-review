@@ -1,0 +1,19 @@
+name: 'Code Reviewer'
+description: 'Reviews code in pull requests to ensure they meet standards not checkable with unit tests or linters'
+
+inputs:
+  token:
+    required: true
+    description: 'GitHub access token with repo permissions'
+  changelog:
+    required: false
+    default: 'true'
+    description: 'Whether to check the changelog for missing entries'
+  todos:
+    required: false
+    default: 'true'
+    description: 'Whether to check for TODOs in code that are resolved by the current PR'
+
+runs:
+  using: 'node16'
+  main: './bin/index.js'
