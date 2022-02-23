@@ -1,7 +1,10 @@
+import core from '@actions/core';
+import { context } from '@actions/github';
+
 export default () => ({
-  checkChangelog: process.env.DMSI_CHECK_CHANGELOG === 'true',
-  checkTodos: process.env.DMSI_CHECK_TODOS === 'true',
-  prNumber: Number.parseInt(process.env.PULL_REQUEST ?? '0', 10),
-  repo: process.env.REPO_NAME,
-  repoOwner: process.env.REPO_OWNER,
+  checkChangelog: core.getBooleanInput('changelog'),
+  checkTodos: core.getBooleanInput('todos'),
+  prNumber: context.payload.pull_request?.number ?? 0,
+  repo: context.repo.repo,
+  repoOwner: context.repo.owner,
 });

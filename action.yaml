@@ -15,15 +15,5 @@ inputs:
     description: 'Whether to check for TODOs in code that are resolved by the current PR'
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Update Docs
-      run: node ${{ github.action_path }}/bin/index.js
-      shell: bash
-      env:
-        DMSI_CHECK_CHANGELOG: ${{ inputs.changelog }}
-        DMSI_CHECK_TODOS: ${{ inputs.todos }}
-        GHA_ACCESS_TOKEN: ${{ inputs.token }}
-        REPO_NAME: ${{ github.repository }}
-        REPO_OWNER: ${{ github.owner }}
-        PULL_REQUEST: ${{ github.event.inputs.pullNumber || github.event.number }}
+  using: 'node16'
+  main: './bin/index.js'
