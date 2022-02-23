@@ -1,8 +1,18 @@
-# gha-code-review
+# GHA Code Review
 
-The purpose of this GitHub Action is to check code in mode complex ways than 
+[![release][release-badge]][release]
 
-### Usage
+The purpose of this GitHub Action is to check code in mode complex ways than
+
+## Inputs
+
+| NAME      | DESCRIPTION                                                            | TYPE    | REQUIRED | DEFAULT |
+| --------- | ---------------------------------------------------------------------- | ------- | -------- | ------- |
+| token     | GitHub access token with repo permissions                              | string  | yes      |         |
+| changelog | Whether to check the changelog for missing entries                     | boolean | no       | true    |
+| todos     | Whether to check for TODOs in code that are resolved by the current PR | boolean | no       | true    |
+
+## Example
 
 ```yaml
 name: Code Review
@@ -22,29 +32,4 @@ jobs:
         uses: dmsi-io/gha-code-review@main
         with:
           token: ${{ secrets.MY_TOKEN }}
-```
-
-### Optional Params
-
-#### changelog
-
-Whether to check the changelog for missing entries
-
-Default: true
-
-```yaml
-with:
-  changelog: 'false'
-```
-
-#### todo
-
-Whether to check for TODOs in code that are resolved by the current PR (i.e., the PR is for story ABC-123, but
-`// TODO: [ABC-123]` remains in the code base)
-
-Default: true
-
-```yaml
-with:
-  changelog: 'false'
 ```
