@@ -2,7 +2,7 @@
 
 [![release][release-badge]][release]
 
-The purpose of this GitHub Action is to check code in mode complex ways than
+The purpose of this GitHub Action is to check code in more complex ways than is allowed by linters or unit tests
 
 ## Inputs
 
