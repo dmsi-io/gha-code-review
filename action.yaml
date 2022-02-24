@@ -15,5 +15,25 @@ inputs:
     description: 'Whether to check for TODOs in code that are resolved by the current PR'
 
 runs:
-  using: 'node16'
-  main: './bin/index.js'
+  using: 'composite'
+  steps:
+    - name: Get Story Numbers
+      id: stories
+      if: ${{ inputs.changelog }} = 'true'
+      uses: Renddslow/prepare-branch-commit@v1.0.1
+      with:
+        branch-name: ${{ github.head_ref }}
+    - name: Get TODOs
+      id: todos
+      if: ${{ inputs.changelog }} = 'true'
+      # Find all comments with matching story numbers
+      # Results concatenated with ':::' to support single line requirement
+      run: |
+        echo "::set-output name=todo-files::$(echo "${{ steps.stories.outputs.issue-tags }}" | tr ',' '\n' | xargs -I {} sh -c "grep -n '.*//\\s*TODO.*{}' -R . --exclude-dir 'node_modules' || true" | awk '{print}' ORS=':::')"
+      shell: bash
+    - name: Code Review
+      run: node ${{ github.action_path }}/bin/index.js
+      shell: bash
+      env:
+        TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}
+        CODE_REVIEW_TOKEN: ${{ inputs.token }}

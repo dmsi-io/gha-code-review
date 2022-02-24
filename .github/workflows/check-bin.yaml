@@ -1,5 +1,5 @@
 # We need to make sure the checked-in `index.js` actually matches what we expect it to be.
-name: Check Binary
+name: Test and Check Binary
 
 on:
   push:
@@ -29,6 +29,10 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
+        shell: bash
+
+      - name: Test
+        run: yarn test
         shell: bash
 
       - name: Rebuild the index.js file
