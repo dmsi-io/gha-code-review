@@ -1,5 +1,10 @@
 import main from './main';
+import messages from './messages';
 
-void (async () => {
-  await main();
-})();
+main()
+  .then(() => {
+    console.log('done!');
+  })
+  .catch((err: Error) => {
+    console.error(messages.error(err.message));
+  });

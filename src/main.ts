@@ -1,7 +1,9 @@
 import getActionInputs from './gha/getActionInputs';
-import { ReviewerFunction, ReviewerOptions } from './reviewers/reviewer.types';
+import { submitReview } from './gha/githubAccessor';
+import { ReviewerFunction } from './reviewers/reviewer.types';
 
 import { changelogReviewer, todosReviewer } from './reviewers';
+import messages from './messages';
 
 export default async () => {
   const { checkChangelog, checkTodos, ...options } = getActionInputs();
@@ -9,12 +11,21 @@ export default async () => {
     throw new Error('Invalid arguments');
   }
 
-  const reviewsToRun: ReviewerFunction[] = [];
+  const reviewsToRun: { name: string; reviewer: ReviewerFunction }[] = [];
   if (checkChangelog) {
-    reviewsToRun.push(changelogReviewer);
+    reviewsToRun.push({ name: 'changelog', reviewer: changelogReviewer });
   }
   if (checkTodos) {
-    reviewsToRun.push(todosReviewer);
+    reviewsToRun.push({ name: 'todos', reviewer: todosReviewer });
   }
-  await Promise.all(reviewsToRun.map((reviewer) => reviewer(options as ReviewerOptions)));
+  return Promise.all(
+    reviewsToRun.map(async ({ name, reviewer }) => {
+      const review = await reviewer(options);
+      if (review) {
+        return submitReview(review);
+      }
+      console.log(messages.success(`No review to submit for ${name}`));
+      return Promise.resolve();
+    }),
+  );
 };
