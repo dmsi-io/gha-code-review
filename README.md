@@ -6,11 +6,11 @@ The purpose of this GitHub Action is to check code in more complex ways than is 
 
 ## Inputs
 
-| NAME      | DESCRIPTION                                                            | TYPE    | REQUIRED | DEFAULT |
-| --------- | ---------------------------------------------------------------------- | ------- | -------- | ------- |
-| changelog | Whether to check the changelog for missing entries                     | boolean | no       | true    |
-| todos     | Whether to check for TODOs in code that are resolved by the current PR | boolean | no       | true    |
-| token     | GitHub access token with repo permissions                              | string  | yes      |         |
+| NAME        | DESCRIPTION                                                            | TYPE      | REQUIRED | DEFAULT |
+| ----------- | ---------------------------------------------------------------------- | --------- | -------- | ------- |
+| `changelog` | Whether to check the changelog for missing entries                     | `boolean` | `false`  | `true`  |
+| `todos`     | Whether to check for TODOs in code that are resolved by the current PR | `boolean` | `false`  | `true`  |
+| `token`     | GitHub access token with repo permissions                              | `string`  | `true`   |         |
 
 ## Example
 
