@@ -1,3 +1,4 @@
+import core from '@actions/core';
 import getActionInputs from './gha/getActionInputs';
 import { ReviewerFunction, ReviewerOptions } from './reviewers/reviewer.types';
 
@@ -8,6 +9,8 @@ export default async () => {
   if (!options.repo || !options.repoOwner || options.prNumber < 1) {
     throw new Error('Invalid arguments');
   }
+
+  core.info(JSON.stringify({checkChangelog, checkTodos, options}))
 
   const reviewsToRun: ReviewerFunction[] = [];
   if (checkChangelog) {
