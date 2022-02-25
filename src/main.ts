@@ -1,5 +1,10 @@
 import getActionInputs from './gha/getActionInputs';
-import { submitReview } from './gha/githubAccessor';
+import {
+  deleteAllPullRequestReviewCommentsAsync,
+  getReviews,
+  submitReview,
+  updateReview,
+} from './gha/githubAccessor';
 import { ReviewerFunction } from './reviewers/reviewer.types';
 
 import { changelogReviewer, todosReviewer } from './reviewers';
@@ -13,19 +18,52 @@ export default async () => {
 
   const reviewsToRun: { name: string; reviewer: ReviewerFunction }[] = [];
   if (checkChangelog) {
-    reviewsToRun.push({ name: 'changelog', reviewer: changelogReviewer });
+    reviewsToRun.push({ name: 'Changelog Review', reviewer: changelogReviewer });
   }
   if (checkTodos) {
-    reviewsToRun.push({ name: 'todos', reviewer: todosReviewer });
+    reviewsToRun.push({ name: 'Todo Review', reviewer: todosReviewer });
   }
-  return Promise.all(
+
+  const reviews = await Promise.all(
     reviewsToRun.map(async ({ name, reviewer }) => {
-      const review = await reviewer(options);
+      return {
+        name,
+        review: await reviewer(options),
+      };
+    }),
+  );
+
+  // Delete the old reviews
+  const previousReviews = await getReviews();
+  console.log('old reviews', previousReviews.map(({ id }) => id).join(', '));
+
+  await Promise.all([
+    ...reviews.map(async ({ name, review }) => {
       if (review) {
-        return submitReview(review);
+        const updatableReview = previousReviews.find(({ body }) => body.startsWith(`# ${name}`));
+        const submittedReview = {
+          ...review,
+          body: `# ${name}\n\n${review.body}`,
+        };
+        if (updatableReview) {
+          console.log(messages.text(`updating review for ${name}`));
+          return updateReview(updatableReview, submittedReview);
+        }
+        console.log(messages.text(`creating review for ${name}`));
+        return submitReview(submittedReview);
       }
       console.log(messages.success(`No review to submit for ${name}`));
       return Promise.resolve();
     }),
-  );
+    ...previousReviews
+      .filter(
+        (r) =>
+          !reviews.find((newReview) =>
+            newReview.review?.body.startsWith(`# ${r.body.split('\n')[0]}`),
+          ),
+      )
+      .map((r) => {
+        return deleteAllPullRequestReviewCommentsAsync(r.id);
+      }),
+  ]);
 };
