@@ -1,7 +1,14 @@
 import getActionInputs from './gha/getActionInputs';
-import { ReviewerFunction, ReviewerOptions } from './reviewers/reviewer.types';
+import {
+  deleteAllPullRequestReviewCommentsAsync,
+  getReviews,
+  submitReview,
+  updateReview,
+} from './gha/githubAccessor';
+import { ReviewerFunction } from './reviewers/reviewer.types';
 
 import { changelogReviewer, todosReviewer } from './reviewers';
+import messages from './messages';
 
 export default async () => {
   const { checkChangelog, checkTodos, ...options } = getActionInputs();
@@ -9,12 +16,54 @@ export default async () => {
     throw new Error('Invalid arguments');
   }
 
-  const reviewsToRun: ReviewerFunction[] = [];
+  const reviewsToRun: { name: string; reviewer: ReviewerFunction }[] = [];
   if (checkChangelog) {
-    reviewsToRun.push(changelogReviewer);
+    reviewsToRun.push({ name: 'Changelog Review', reviewer: changelogReviewer });
   }
   if (checkTodos) {
-    reviewsToRun.push(todosReviewer);
+    reviewsToRun.push({ name: 'Todo Review', reviewer: todosReviewer });
   }
-  await Promise.all(reviewsToRun.map((reviewer) => reviewer(options as ReviewerOptions)));
+
+  const reviews = await Promise.all(
+    reviewsToRun.map(async ({ name, reviewer }) => {
+      return {
+        name,
+        review: await reviewer(options),
+      };
+    }),
+  );
+
+  // Delete the old reviews
+  const previousReviews = await getReviews();
+  console.log('old reviews', previousReviews.map(({ id }) => id).join(', '));
+
+  await Promise.all([
+    ...reviews.map(async ({ name, review }) => {
+      if (review) {
+        const updatableReview = previousReviews.find(({ body }) => body.startsWith(`# ${name}`));
+        const submittedReview = {
+          ...review,
+          body: `# ${name}\n\n${review.body}`,
+        };
+        if (updatableReview) {
+          console.log(messages.text(`updating review for ${name}`));
+          return updateReview(updatableReview, submittedReview);
+        }
+        console.log(messages.text(`creating review for ${name}`));
+        return submitReview(submittedReview);
+      }
+      console.log(messages.success(`No review to submit for ${name}`));
+      return Promise.resolve();
+    }),
+    ...previousReviews
+      .filter(
+        (r) =>
+          !reviews.find((newReview) =>
+            newReview.review?.body.startsWith(`# ${r.body.split('\n')[0]}`),
+          ),
+      )
+      .map((r) => {
+        return deleteAllPullRequestReviewCommentsAsync(r.id);
+      }),
+  ]);
 };

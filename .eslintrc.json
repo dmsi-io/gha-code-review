@@ -28,6 +28,7 @@
     "GLOBAL": false
   },
   "rules": {
+    "no-console": "off",
     "max-len": "off",
     "prefer-promise-reject-errors": "off",
     "global-require": "off",
