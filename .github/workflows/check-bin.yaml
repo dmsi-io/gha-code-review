@@ -20,6 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Self-Check
+        uses: ./
+        with:
+          token: ${{ secrets.PUBLIC_GHA_ACCESS_TOKEN }}
+
       - name: Node
         id: node
         uses: actions/setup-node@v2

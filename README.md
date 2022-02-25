@@ -4,6 +4,8 @@
 
 The purpose of this GitHub Action is to check code in more complex ways than is allowed by linters or unit tests
 
+**NOTE:** This action expects that the repo will have been checked out prior to running the action.
+
 ## Inputs
 
 | NAME        | DESCRIPTION                                                            | TYPE      | REQUIRED | DEFAULT |
