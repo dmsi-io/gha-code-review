@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Update Doc
+      - name: Check Code
         uses: dmsi-io/gha-code-review@main
         with:
           token: ${{ secrets.MY_TOKEN }}
