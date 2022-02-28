@@ -2,6 +2,10 @@ import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import { retry } from '@octokit/plugin-retry';
 import { throttling } from '@octokit/plugin-throttling';
 
+import parseDiff from 'parse-diff';
+
+import path from 'path';
+
 import { Review } from '../reviewers/reviewer.types';
 import getActionInputs from './getActionInputs';
 
@@ -69,7 +73,7 @@ export const getReviews = () => {
 
 export const updateReview = async (
   updatableReview: Awaited<ReturnType<typeof getReviews>>[number],
-  { body }: Review,
+  { body, comments }: Review,
 ) => {
   const { repo, repoOwner, prNumber } = getActionInputs();
   const { data } = await octokit.pulls.updateReview({
@@ -78,6 +82,7 @@ export const updateReview = async (
     pull_number: prNumber,
     review_id: updatableReview.id,
     body,
+    comments,
   });
   return data;
 };
@@ -111,4 +116,23 @@ export const deleteAllPullRequestReviewCommentsAsync = async (reviewID: number) 
       .filter((comment) => comment.pull_request_review_id === reviewID)
       .map((comment) => deletePullRequestReviewCommentAsync(comment.id)),
   );
+};
+
+export const getPRDiff = async () => {
+  const { repo, repoOwner, prNumber } = getActionInputs();
+  const { data } = await octokit.pulls.get({
+    owner: repoOwner,
+    repo,
+    pull_number: prNumber,
+    headers: {
+      accept: 'application/vnd.github.v3.diff',
+    },
+  });
+  return parseDiff((data as unknown) as string).map((diffEntry) => ({
+    ...diffEntry,
+    path: path.join(
+      process.env.BASE_DIR ?? '.',
+      (diffEntry.deleted ? diffEntry.from : diffEntry.to)!,
+    ),
+  }));
 };
