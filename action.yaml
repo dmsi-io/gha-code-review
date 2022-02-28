@@ -35,5 +35,6 @@ runs:
       run: node ${{ github.action_path }}/bin/index.js
       shell: bash
       env:
-        TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}
         CODE_REVIEW_TOKEN: ${{ inputs.token }}
+        TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}
+        PR_BRANCH: ${{ github.head_ref }}
