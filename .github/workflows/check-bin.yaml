@@ -27,6 +27,7 @@ jobs:
       - name: Self-Check
         uses: ./
         with:
+          changelog: 'false'
           token: ${{ secrets.PUBLIC_GHA_ACCESS_TOKEN }}
 
       - name: Node

@@ -16,14 +16,15 @@ export type ReviewerOptions = {
   prNumber: number;
   repo: string;
   repoOwner: string;
+  storyNumbers: string;
   todos: string | undefined;
 };
 
 export type ReviewComment = {
   body: string;
   path: string;
-  line: number;
   side: ReviewSide;
+  line: number;
 };
 
 export type Review = {

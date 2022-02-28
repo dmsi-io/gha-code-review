@@ -1,6 +1,10 @@
-import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import { retry } from '@octokit/plugin-retry';
 import { throttling } from '@octokit/plugin-throttling';
+
+import parseDiff from 'parse-diff';
+
+import path from 'path';
 
 import { Review } from '../reviewers/reviewer.types';
 import getActionInputs from './getActionInputs';
@@ -12,8 +16,6 @@ type Options = {
   };
   url: string;
 };
-
-export type PullRequestReview = RestEndpointMethodTypes['pulls']['getReview']['response']['data'];
 
 const PluginOctokit = Octokit.plugin(throttling).plugin(retry);
 const octokit = new PluginOctokit({
@@ -68,47 +70,36 @@ export const getReviews = () => {
 };
 
 export const updateReview = async (
-  updatableReview: Awaited<ReturnType<typeof getReviews>>[number],
-  { body }: Review,
+  updatableReview: Awaited<ReturnType<typeof getReviews>>[number]['id'],
+  { body, comments }: Review,
 ) => {
   const { repo, repoOwner, prNumber } = getActionInputs();
   const { data } = await octokit.pulls.updateReview({
     owner: repoOwner,
     repo,
     pull_number: prNumber,
-    review_id: updatableReview.id,
+    review_id: updatableReview,
     body,
+    comments,
   });
   return data;
 };
 
-export const listPullRequestReviewCommentsAsync = async (reviewID: number) => {
+export const getPRDiff = async () => {
   const { repo, repoOwner, prNumber } = getActionInputs();
-  const { data } = await octokit.pulls.listReviewComments({
+  const { data } = await octokit.pulls.get({
     owner: repoOwner,
     repo,
     pull_number: prNumber,
-    review_id: reviewID,
+    headers: {
+      accept: 'application/vnd.github.v3.diff',
+    },
   });
-  return data;
-};
-
-export const deletePullRequestReviewCommentAsync = async (commentID: number) => {
-  const { repo, repoOwner } = getActionInputs();
-  const { data } = await octokit.pulls.deleteReviewComment({
-    owner: repoOwner,
-    repo,
-    comment_id: commentID,
-  });
-  return data;
-};
-
-export const deleteAllPullRequestReviewCommentsAsync = async (reviewID: number) => {
-  const comments = await listPullRequestReviewCommentsAsync(reviewID);
-
-  await Promise.all(
-    comments
-      .filter((comment) => comment.pull_request_review_id === reviewID)
-      .map((comment) => deletePullRequestReviewCommentAsync(comment.id)),
-  );
+  return parseDiff((data as unknown) as string).map((diffEntry) => ({
+    ...diffEntry,
+    path: path.join(
+      process.env.BASE_DIR ?? '.',
+      (diffEntry.deleted ? diffEntry.from : diffEntry.to)!,
+    ),
+  }));
 };
