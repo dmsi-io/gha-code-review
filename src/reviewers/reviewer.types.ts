@@ -12,6 +12,7 @@ export enum ReviewSide {
 }
 
 export type ReviewerOptions = {
+  branch: string;
   prNumber: number;
   repo: string;
   repoOwner: string;

@@ -5,6 +5,7 @@ const getOptionalBooleanInput = (varName: string) =>
   core.getInput(varName).toLowerCase() !== 'false';
 
 export default () => ({
+  branch: context.ref.replace('refs/heads/', ''),
   checkChangelog: getOptionalBooleanInput('changelog'),
   checkTodos: getOptionalBooleanInput('todos'),
   prNumber: context.payload.pull_request?.number ?? 0,
