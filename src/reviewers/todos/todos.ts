@@ -24,7 +24,14 @@ const TodoReviewer: ReviewerFunction = async (opts: ReviewerOptions) => {
       comments.length === 1 ? 'is 1 todo' : `are ${comments.length} todos`
     } in your code associated with the story/stories on this pull request. Can ${
       comments.length === 1 ? 'it' : 'they'
-    } be removed?\n\n${comments.map((c) => `- \`${c.path}:${c.line}\``).join('\n')}`,
+    } be removed?\n\n${comments
+      .map(
+        (c) =>
+          `- [\`${c.path}:${c.line}\`](https://github.com/${opts.repoOwner}/${opts.repo}/blob/${
+            opts.branch
+          }/${c.path.replace(/^\.\//, '')}#L${c.line})`,
+      )
+      .join('\n')}`,
     event: ReviewEvent.COMMENT,
   });
 };
