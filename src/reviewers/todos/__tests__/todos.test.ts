@@ -10,6 +10,7 @@ test('Returns undefined for empty todos', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos: '',
     }),
     undefined,
@@ -21,6 +22,7 @@ test('Returns undefined for empty todos', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos: undefined,
     }),
     undefined,
@@ -34,6 +36,7 @@ test('Creates todo review for single instance', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos: 'src/foo/bar.ts:42: //TODO: [XYZ-987]',
     }),
     {
@@ -51,6 +54,7 @@ test('Creates todo review for multiple instances', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos:
         './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
     }),
@@ -69,6 +73,7 @@ test('Returns without links when pieces are undefined', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos:
         './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
     }),
@@ -85,6 +90,7 @@ test('Returns without links when pieces are undefined', async (t) => {
       prNumber: 1,
       repo: '',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos:
         './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
     }),
@@ -101,6 +107,7 @@ test('Returns without links when pieces are undefined', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: '',
+      storyNumbers: '',
       todos:
         './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
     }),
@@ -117,12 +124,13 @@ test('Returns without links when pieces are undefined', async (t) => {
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
+      storyNumbers: '',
       todos:
         './src/foo/bar.ts:X://TODO: ABC-123\n./src/fizz/buzz.js:-1:    .slice(); // TODO: DEF-456',
     }),
     {
       body:
-        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:NaN`\n- `./src/fizz/buzz.js:-1`',
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- [`./src/foo/bar.ts`](https://github.com/bar/foo/blob/feature/ABC-123-DEF-456/src/foo/bar.ts)\n- [`./src/fizz/buzz.js`](https://github.com/bar/foo/blob/feature/ABC-123-DEF-456/src/fizz/buzz.js)',
       event: ReviewEvent.COMMENT,
     },
   );

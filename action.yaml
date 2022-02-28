@@ -35,6 +35,10 @@ runs:
       run: node ${{ github.action_path }}/bin/index.js
       shell: bash
       env:
+        BASE_DIR: ${{ github.workflow_root }}
+        CODE_REVIEW_CHANGELOG: ${{ inputs.changelog }}
+        CODE_REVIEW_TODOS: ${{ inputs.todos }}
         CODE_REVIEW_TOKEN: ${{ inputs.token }}
-        TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}
         PR_BRANCH: ${{ github.head_ref }}
+        STORY_NUMBERS: ${{ steps.stories.outputs.issue-tags }}
+        TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}

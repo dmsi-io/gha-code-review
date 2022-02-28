@@ -1,11 +1,6 @@
 import getActionInputs from './gha/getActionInputs';
-import {
-  deleteAllPullRequestReviewCommentsAsync,
-  getReviews,
-  submitReview,
-  updateReview,
-} from './gha/githubAccessor';
-import { ReviewerFunction } from './reviewers/reviewer.types';
+import { getReviews, submitReview, updateReview } from './gha/githubAccessor';
+import { ReviewerFunction, ReviewEvent } from './reviewers/reviewer.types';
 
 import { changelogReviewer, todosReviewer } from './reviewers';
 import messages from './messages';
@@ -47,7 +42,7 @@ export default async () => {
         };
         if (updatableReview) {
           console.log(messages.text(`updating review for ${name}`));
-          return updateReview(updatableReview, submittedReview);
+          return updateReview(updatableReview.id, submittedReview);
         }
         console.log(messages.text(`creating review for ${name}`));
         return submitReview(submittedReview);
@@ -63,7 +58,10 @@ export default async () => {
           ),
       )
       .map((r) => {
-        return deleteAllPullRequestReviewCommentsAsync(r.id);
+        return updateReview(r.id, {
+          body: `${r.body.split('\n')[0]}\n\nLooks good: all issues resolved!`,
+          event: ReviewEvent.COMMENT,
+        });
       }),
   ]);
 };
