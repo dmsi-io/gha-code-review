@@ -6,6 +6,7 @@ import { ReviewEvent } from '../../reviewer.types';
 test('Returns undefined for empty todos', async (t) => {
   t.deepEqual(
     await todosReviewer({
+      branch: 'feature/ABC-123',
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
@@ -16,6 +17,7 @@ test('Returns undefined for empty todos', async (t) => {
 
   t.deepEqual(
     await todosReviewer({
+      branch: 'feature/ABC-123',
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
@@ -28,6 +30,7 @@ test('Returns undefined for empty todos', async (t) => {
 test('Creates todo review for single instance', async (t) => {
   t.deepEqual(
     await todosReviewer({
+      branch: 'fix/XYZ-987',
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
@@ -35,7 +38,7 @@ test('Creates todo review for single instance', async (t) => {
     }),
     {
       body:
-        'There is 1 todo in your code associated with the story/stories on this pull request. Can it be removed?\n\n- `src/foo/bar.ts:42`',
+        'There is 1 todo in your code associated with the story/stories on this pull request. Can it be removed?\n\n- [`src/foo/bar.ts:42`](https://github.com/bar/foo/blob/fix/XYZ-987/src/foo/bar.ts#L42)',
       event: ReviewEvent.COMMENT,
     },
   );
@@ -44,14 +47,82 @@ test('Creates todo review for single instance', async (t) => {
 test('Creates todo review for multiple instances', async (t) => {
   t.deepEqual(
     await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
       prNumber: 1,
       repo: 'foo',
       repoOwner: 'bar',
-      todos: 'src/foo/bar.ts:23://TODO: ABC-123\nsrc/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
     }),
     {
       body:
-        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `src/foo/bar.ts:23`\n- `src/fizz/buzz.js:1`',
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- [`./src/foo/bar.ts:23`](https://github.com/bar/foo/blob/feature/ABC-123-DEF-456/src/foo/bar.ts#L23)\n- [`./src/fizz/buzz.js:1`](https://github.com/bar/foo/blob/feature/ABC-123-DEF-456/src/fizz/buzz.js#L1)',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+});
+
+test('Returns without links when pieces are undefined', async (t) => {
+  t.deepEqual(
+    await todosReviewer({
+      branch: '',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: '',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: '',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:X://TODO: ABC-123\n./src/fizz/buzz.js:-1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:NaN`\n- `./src/fizz/buzz.js:-1`',
       event: ReviewEvent.COMMENT,
     },
   );

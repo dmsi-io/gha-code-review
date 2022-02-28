@@ -1,6 +1,23 @@
 import { ReviewerFunction, ReviewerOptions, ReviewEvent } from '../reviewer.types';
 import messages from '../../messages';
 
+const commentLine = (
+  c: { line: number; path: string },
+  repoOwner: string,
+  repo: string,
+  branch: string,
+) => {
+  if (branch && repo && repoOwner && !Number.isNaN(c.line) && c.line > 0) {
+    return `- [\`${c.path}:${
+      c.line
+    }\`](https://github.com/${repoOwner}/${repo}/blob/${branch}/${c.path.replace(/^\.\//, '')}#L${
+      c.line
+    })`;
+  }
+
+  return `- \`${c.path}:${c.line}\``;
+};
+
 const TodoReviewer: ReviewerFunction = async (opts: ReviewerOptions) => {
   if (!opts.todos) {
     return Promise.resolve(undefined);
@@ -24,7 +41,9 @@ const TodoReviewer: ReviewerFunction = async (opts: ReviewerOptions) => {
       comments.length === 1 ? 'is 1 todo' : `are ${comments.length} todos`
     } in your code associated with the story/stories on this pull request. Can ${
       comments.length === 1 ? 'it' : 'they'
-    } be removed?\n\n${comments.map((c) => `- \`${c.path}:${c.line}\``).join('\n')}`,
+    } be removed?\n\n${comments
+      .map((c) => commentLine(c, opts.repoOwner, opts.repo, opts.branch))
+      .join('\n')}`,
     event: ReviewEvent.COMMENT,
   });
 };
