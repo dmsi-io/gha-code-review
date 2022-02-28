@@ -61,3 +61,69 @@ test('Creates todo review for multiple instances', async (t) => {
     },
   );
 });
+
+test('Returns without links when pieces are undefined', async (t) => {
+  t.deepEqual(
+    await todosReviewer({
+      branch: '',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: '',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: '',
+      todos:
+        './src/foo/bar.ts:23://TODO: ABC-123\n./src/fizz/buzz.js:1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:23`\n- `./src/fizz/buzz.js:1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+
+  t.deepEqual(
+    await todosReviewer({
+      branch: 'feature/ABC-123-DEF-456',
+      prNumber: 1,
+      repo: 'foo',
+      repoOwner: 'bar',
+      todos:
+        './src/foo/bar.ts:X://TODO: ABC-123\n./src/fizz/buzz.js:-1:    .slice(); // TODO: DEF-456',
+    }),
+    {
+      body:
+        'There are 2 todos in your code associated with the story/stories on this pull request. Can they be removed?\n\n- `./src/foo/bar.ts:NaN`\n- `./src/fizz/buzz.js:-1`',
+      event: ReviewEvent.COMMENT,
+    },
+  );
+});
