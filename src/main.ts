@@ -54,7 +54,7 @@ export default async () => {
       .filter(
         (r) =>
           !reviews.find((newReview) =>
-            newReview.review?.body.startsWith(`# ${r.body.split('\n')[0]}`),
+            newReview.review?.body.startsWith(`${r.body.split('\n')[0]}`),
           ),
       )
       .map((r) => {
