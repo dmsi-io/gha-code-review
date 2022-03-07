@@ -51,12 +51,7 @@ export default async () => {
       return Promise.resolve();
     }),
     ...previousReviews
-      .filter(
-        (r) =>
-          !reviews.find((newReview) =>
-            newReview.review?.body.startsWith(`# ${r.body.split('\n')[0]}`),
-          ),
-      )
+      .filter((r) => !reviews.find((newReview) => r.body.startsWith(`# ${newReview.name}`)))
       .map((r) => {
         return updateReview(r.id, {
           body: `${r.body.split('\n')[0]}\n\nLooks good: all issues resolved!`,
