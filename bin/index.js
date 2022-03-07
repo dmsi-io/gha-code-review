@@ -45,8 +45,7 @@ ${i}`:s||i||"")();return Promise.resolve(l?{body:l,event:$e.COMMENT,comments:d.l
 ${a.map(p=>y1(p,e.repoOwner,e.repo,e.branch)).join(`
 `)}`,event:$e.COMMENT}))},Ca=L4;var Gi=async()=>{let i=a1(),{checkChangelog:e,checkTodos:a}=i,p=Gt(i,["checkChangelog","checkTodos"]);if(!p.repo||!p.repoOwner||p.prNumber<1)throw new Error("Invalid arguments");let t=[];e&&t.push({name:"Changelog Review",reviewer:Aa}),a&&t.push({name:"Todo Review",reviewer:Ca});let r=await Promise.all(t.map(async({name:o,reviewer:d})=>({name:o,review:await d(p)}))),s=await rs();console.log("old reviews",s.map(({id:o})=>o).join(", ")),await Promise.all([...r.map(async({name:o,review:d})=>{if(d){let l=s.find(({body:v})=>v.startsWith(`# ${o}`)),u=Ue(Ne({},d),{body:`# ${o}
 
-${d.body}`});return l?(console.log(Je.text(`updating review for ${o}`)),Fp(l.id,u)):(console.log(Je.text(`creating review for ${o}`)),ts(u))}return console.log(Je.success(`No review to submit for ${o}`)),Promise.resolve()}),...s.filter(o=>!r.find(d=>d.review?.body.startsWith(`${o.body.split(`
-`)[0]}`))).map(o=>Fp(o.id,{body:`${o.body.split(`
+${d.body}`});return l?(console.log(Je.text(`updating review for ${o}`)),Fp(l.id,u)):(console.log(Je.text(`creating review for ${o}`)),ts(u))}return console.log(Je.success(`No review to submit for ${o}`)),Promise.resolve()}),...s.filter(o=>!r.find(d=>o.body.startsWith(`# ${d.name}`))).map(o=>Fp(o.id,{body:`${o.body.split(`
 `)[0]}
 
 Looks good: all issues resolved!`,event:$e.COMMENT}))])};Gi().then(()=>{console.log("done!")}).catch(e=>{console.error(Je.error(e.message))});
