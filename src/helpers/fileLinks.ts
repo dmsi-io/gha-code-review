@@ -1,7 +1,7 @@
 export const commentPath = (
   c:
     | { directory: boolean; line?: never; path: string }
-    | { directory?: never; line: number; path: string },
+    | { directory?: false; line?: number; path: string },
   repoOwner: string,
   repo: string,
   branch: string,
