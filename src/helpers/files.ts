@@ -15,5 +15,5 @@ export const getAllPackages = async (): Promise<string[]> => {
         return path.dirname(fullPackageJsonPath);
       }),
     ]),
-  ).filter((p): p is string => !!p);
+  ).filter((p): p is string => !!p || p === '');
 };

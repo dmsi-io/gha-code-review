@@ -30,7 +30,7 @@ export default async () => {
 
   // Delete the old reviews
   const previousReviews = await getReviews();
-  console.log('old reviews', previousReviews.map(({ id }) => id).join(', '));
+  console.log('old reviews', `[${previousReviews.map(({ id }) => id).join(', ')}]`);
 
   await Promise.all([
     ...reviews.map(async ({ name, review }) => {
@@ -41,20 +41,20 @@ export default async () => {
           body: `# ${name}\n\n${review.body}`,
         };
         if (updatableReview) {
-          console.log(messages.text(`updating review for ${name}`));
+          console.log(messages.text(`Updating review for ${name}`));
           return updateReview(updatableReview.id, submittedReview);
         }
-        console.log(messages.text(`creating review for ${name}`));
+        console.log(messages.text(`Creating review for ${name}`));
         return submitReview(submittedReview);
       }
       console.log(messages.success(`No review to submit for ${name}`));
       return Promise.resolve();
     }),
     ...previousReviews
-      .filter((r) => !reviews.find((newReview) => r.body.startsWith(`# ${newReview.name}`)))
-      .map((r) => {
-        return updateReview(r.id, {
-          body: `${r.body.split('\n')[0]}\n\nLooks good: all issues resolved!`,
+      .filter(({ body }) => !reviews.find(({ name }) => body.startsWith(`# ${name}`)))
+      .map(({ body, id }) => {
+        return updateReview(id, {
+          body: `${body.split('\n')[0]}\n\nLooks good: all issues resolved!`,
           event: ReviewEvent.COMMENT,
         });
       }),

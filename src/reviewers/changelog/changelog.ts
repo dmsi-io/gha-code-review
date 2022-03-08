@@ -1,5 +1,3 @@
-import path from 'path';
-
 import { ReviewComment, ReviewerFunction, ReviewEvent, ReviewSide } from '../reviewer.types';
 import { getPRDiff } from '../../gha/githubAccessor';
 import { getAllPackages } from '../../helpers/files';
@@ -26,23 +24,33 @@ const ChangelogReviewer: ReviewerFunction = async (opts) => {
   const diff = await getPRDiff();
   const packages = await getAllPackages();
 
-  const modifiedPackages = packages.filter((pkg) =>
-    // If the relative path doesn't start with '../', it's in the same package
-    diff.some((fileDiff) => !path.relative(pkg, fileDiff.path).startsWith('../')),
-  );
+  const modifiedPackages = packages.filter((pkg) => {
+    const root = pkg === '' || pkg === '.' || pkg === './';
+    return diff.some((fileDiff) =>
+      root
+        ? // Root changes -> A file change not within any other package
+          packages.every((p) => p === pkg || !fileDiff.path.includes(p))
+        : // Package change
+          fileDiff.path.includes(pkg),
+    );
+  });
 
   const modifiedPkgsWithoutChangelog = modifiedPackages.filter(
     (pkg) =>
-      !diff.some((fileDiff) => {
-        const pathToFile = fileDiff.path.toLowerCase();
-        return pathToFile.includes(pkg.toLowerCase()) && pathToFile.includes('changelog.md');
+      !diff.some(({ additions, path: filePath }) => {
+        const adjustedFilePath = filePath.toLowerCase();
+        return (
+          additions > 0 &&
+          adjustedFilePath.includes(pkg.toLowerCase()) &&
+          adjustedFilePath.includes('changelog.md')
+        );
       }),
   );
 
   let modifiedPkgComment = '';
   if (modifiedPkgsWithoutChangelog.length === 1) {
     modifiedPkgComment = `Please add a changelog entry for ${commentPath(
-      { path: modifiedPkgsWithoutChangelog[0] },
+      { directory: true, path: modifiedPkgsWithoutChangelog[0] },
       opts.repoOwner,
       opts.repo,
       opts.branch,
