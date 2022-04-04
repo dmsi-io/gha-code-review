@@ -29,7 +29,7 @@ runs:
       # Find all comments with matching story numbers
       # Results concatenated with ':::' to support single line requirement
       run: |
-        echo "::set-output name=todo-files::$(echo "${{ steps.stories.outputs.issue-tags }}" | tr ',' '\n' | xargs -I {} sh -c "grep -n '.*\bTODO.*{}' -R . --exclude-dir 'node_modules' || true" | awk '{print}' ORS=':::')"
+        echo "::set-output name=todo-files::$(echo "${{ steps.stories.outputs.issue-tags }}" | tr ',' '\n' | xargs -I {} sh -c "grep -n '.*\bTODO.*{}' -R . --exclude-dir 'node_modules' || true" | awk '{print}' ORS='_:::_')"
       shell: bash
     - name: Code Review
       run: node ${{ github.action_path }}/bin/index.js
