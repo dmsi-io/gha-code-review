@@ -11,7 +11,6 @@
     "test": "ava",
     "postinstall": "husky install"
   },
-  "dependencies": {},
   "devDependencies": {
     "@actions/github": "^5.0.0",
     "@dmsi/eslint-config": "^5.0.1-tc0",
