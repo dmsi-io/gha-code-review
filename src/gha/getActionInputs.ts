@@ -10,7 +10,7 @@ export default () => ({
   repoOwner: context.repo.owner,
   sha: context.sha,
   storyNumbers: process.env.STORY_NUMBERS ?? '',
-  todos: process.env.TODO_COMMENTS?.split(':::')
+  todos: process.env.TODO_COMMENTS?.split('_:::_')
     .filter((t) => t.length > 0)
     .join('\n'),
 });
