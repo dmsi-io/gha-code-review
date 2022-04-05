@@ -24,11 +24,32 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Self-Check
-        uses: ./
+      # Copy of action.yaml to use paths correctly
+      - name: Get Story Numbers
+        id: stories
+        if: ${{ inputs.changelog }} = 'true'
+        uses: Renddslow/prepare-branch-commit@v1.0.1
         with:
-          changelog: 'false'
-          token: ${{ secrets.PUBLIC_GHA_ACCESS_TOKEN }}
+         branch-name: ${{ github.head_ref }}
+      - name: Get TODOs
+        id: todos
+        if: ${{ inputs.changelog }} = 'true'
+        # Find all comments with matching story numbers
+        # Results concatenated with ':::' to support single line requirement
+        run: |
+          echo "::set-output name=todo-files::$(echo "${{ steps.stories.outputs.issue-tags }}" | tr ',' '\n' | xargs -I {} sh -c "grep -n '.*\bTODO.*{}' -R . --exclude-dir 'node_modules' || true" | awk '{print}' ORS='_:::_')"
+        shell: bash
+      - name: Code Review
+        run: node ./bin/index.js
+        shell: bash
+        env:
+          BASE_DIR: ${{ github.workflow_root }}
+          CODE_REVIEW_CHANGELOG: 'false'
+          CODE_REVIEW_TODOS: ${{ inputs.todos }}
+          CODE_REVIEW_TOKEN: ${{ secrets.PUBLIC_GHA_ACCESS_TOKEN }}
+          PR_BRANCH: ${{ github.head_ref }}
+          STORY_NUMBERS: ${{ steps.stories.outputs.issue-tags }}
+          TODO_COMMENTS: ${{ steps.todos.outputs.todo-files }}
 
       - name: Node
         id: node
