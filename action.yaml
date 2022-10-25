@@ -20,7 +20,7 @@ runs:
     - name: Get Story Numbers
       id: stories
       if: ${{ inputs.changelog }} = 'true'
-      uses: Renddslow/prepare-branch-commit@v1
+      uses: Renddslow/prepare-branch-commit@v1.1.2
       with:
         branch-name: ${{ github.head_ref }}
     - name: Get TODOs
